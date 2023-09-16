@@ -69,15 +69,15 @@ if __name__ == "__main__":
             del loss
         losses[j-1] = sum_loss/len(dataloader)
         scheduler.step()
-        #if j % 10 != 0:
-        #    continue
+        with open("losses.pkl", "wb") as f:
+            pickle.dump(losses[:j-1], f)
+        if j % 10 != 0:
+            continue
         model.eval()
         x_0 = torch.randn(size=(16, channels, image_size, image_size)).to(device)
         x = model.sample(x_0)
         x = (x.clamp(-1, 1) + 1)/2
         grid = torchvision.utils.make_grid(x, 4)
         writer.add_image("SF2M", grid, j)
-        with open("losses.pkl", "wb") as f:
-            pickle.dump(losses[:j-1], f)
-        if j%10==0:
-            save_image(grid, f"checkpoint/epoch{j}.png")
+        save_image(grid, f"checkpoint/epoch{j}.png")
+        torch.save(model.state_dict(), f"checkpoint/epoch{j}.pth")
